@@ -279,6 +279,8 @@
     .share-icon {
       width: 45px;
       height: 45px;
+      min-width: 45px;
+      min-height: 45px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -288,12 +290,23 @@
       font-size: 24px;
       text-decoration: none;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      border: none;
+      padding: 0;
     }
 
     .share-icon:hover {
       transform: translateY(-3px) scale(1.05);
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .share-icon.native-share {
+      background: #000;
+      color: white;
+    }
+
+    .share-icon.qr-share {
+      background: #333;
+      color: white;
     }
 
     .share-icon.whatsapp {
@@ -353,6 +366,8 @@
     .history-share-icon {
       width: 32px;
       height: 32px;
+      min-width: 32px;
+      min-height: 32px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -361,7 +376,9 @@
       transition: all 0.3s ease;
       font-size: 16px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      border: none;
+      padding: 0;
+      text-decoration: none;
     }
 
     .history-share-icon:hover {
@@ -374,6 +391,128 @@
       height: 16px;
       fill: currentColor;
     }
+
+    /* QR Modal Styles */
+    .qr-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .qr-modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 320px;
+      width: 90%;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .qr-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .qr-modal-header h3 {
+      color: #000;
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .qr-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 28px;
+      color: #666;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      line-height: 1;
+      transition: color 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-close-btn:hover {
+      color: #000;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .qr-modal-body {
+      text-align: center;
+    }
+
+    .qr-code-img {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 16px;
+      border: 3px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 8px;
+      background: white;
+    }
+
+    .qr-url {
+      font-size: 12px;
+      color: #666;
+      word-break: break-all;
+      margin-bottom: 16px;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .qr-download-btn {
+      background: linear-gradient(135deg, #000 0%, #333 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .qr-download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -381,8 +520,8 @@
     <h3>URL Shortener</h3>
     
     <div class="tabs">
-      <button class="tab active" data-tab="shorten"> Shorten</button>
-      <button class="tab" data-tab="history"> History</button>
+      <button class="tab active" data-tab="shorten">Shorten</button>
+      <button class="tab" data-tab="history">History</button>
     </div>
 
     <div id="shortenTab" class="tab-content active">
@@ -406,7 +545,7 @@
         <div class="history-empty">No history yet. Start shortening URLs!</div>
       </div>
       <button class="clear-history-btn" id="clearHistoryBtn" style="display: none;">
-         Clear All History
+        Clear All History
       </button>
     </div>
   </div>
