@@ -12,8 +12,8 @@
     body { 
       font-family: 'Times New Roman', Times, serif;
       padding: 20px; 
-      width: 320px; 
-      background: linear-gradient(135deg, #4b5ca5 0%, #ae7edd 100%);
+      width: 360px; 
+      background: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%);
       color: #fff;
     }
 
@@ -25,11 +25,48 @@
     }
 
     h3 {
-      color: #667eea;
+      color: #000;
       margin-bottom: 20px;
       font-size: 22px;
       text-align: center;
       font-weight: 600;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: #666;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+
+    .tab:hover {
+      color: #000;
+    }
+
+    .tab.active {
+      color: #000;
+      border-bottom-color: #000;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
     }
 
     .input-group {
@@ -49,8 +86,8 @@
 
     input:focus {
       outline: none;
-      border-color: #354279;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: #000;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
     }
 
     input::placeholder {
@@ -62,18 +99,18 @@
       padding: 12px 20px;        
       border: none; 
       border-radius: 10px; 
-      background: linear-gradient(135deg, #2e344f 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #000 0%, #333 100%);
       color: white; 
       font-weight: 600; 
       font-size: 15px;
       cursor: pointer; 
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
     button:hover { 
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
 
     button:active {
@@ -93,7 +130,7 @@
     }
 
     #shortUrl a {
-      color: #667eea;
+      color: #000;
       text-decoration: none;
       font-weight: 600;
     }
@@ -103,7 +140,7 @@
     }
 
     #shortUrl small {
-      color: #521bb0;
+      color: #333;
       font-weight: 600;
     }
 
@@ -111,18 +148,267 @@
       display: inline-block;
       margin-right: 6px;
     }
+
+    /* History Styles */
+    .history-container {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .history-empty {
+      text-align: center;
+      color: #999;
+      padding: 40px 20px;
+      font-size: 14px;
+    }
+
+    .history-item {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 2px solid #e0e0e0;
+      transition: all 0.3s ease;
+    }
+
+    .history-item:hover {
+      border-color: #000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .history-item-date {
+      font-size: 11px;
+      color: #999;
+      margin-bottom: 6px;
+    }
+
+    .history-item-original {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+      word-break: break-all;
+    }
+
+    .history-item-short {
+      font-size: 13px;
+      font-weight: 600;
+      color: #000;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+
+    .history-item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .history-btn {
+      flex: 1;
+      padding: 6px 12px;
+      font-size: 12px;
+      background: linear-gradient(135deg, #000 0%, #333 100%);
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .history-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .history-btn.delete {
+      background: linear-gradient(135deg, #666 0%, #999 100%);
+    }
+
+    .clear-history-btn {
+      margin-top: 16px;
+      background: linear-gradient(135deg, #666 0%, #999 100%);
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+
+    .history-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .history-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    .history-container::-webkit-scrollbar-thumb {
+      background: #000;
+      border-radius: 10px;
+    }
+
+    .history-container::-webkit-scrollbar-thumb:hover {
+      background: #333;
+    }
+
+    /* Share Icons Styles */
+    .share-section {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .share-section.visible {
+      display: block;
+    }
+
+    .share-title {
+      font-size: 13px;
+      color: #666;
+      font-weight: 600;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .share-icons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .share-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 24px;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .share-icon:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .share-icon.whatsapp {
+      background: #000;
+      color: white;
+    }
+
+    .share-icon.twitter {
+      background: #333;
+      color: white;
+    }
+
+    .share-icon.facebook {
+      background: #1a1a1a;
+      color: white;
+    }
+
+    .share-icon.linkedin {
+      background: #2a2a2a;
+      color: white;
+    }
+
+    .share-icon.telegram {
+      background: #0a0a0a;
+      color: white;
+    }
+
+    .share-icon.email {
+      background: #4a4a4a;
+      color: white;
+    }
+
+    .share-icon.reddit {
+      background: #5a5a5a;
+      color: white;
+    }
+
+    .share-icon.copy {
+      background: #000;
+      color: white;
+      border: none;
+    }
+
+    .share-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .history-share-icons {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .history-share-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 16px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .history-share-icon:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .history-share-icon svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h3>URL Shortener</h3>
-    <div class="input-group">
-      <input type="text" id="urlInput" placeholder="Paste your long URL here..." />
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="shorten"> Shorten</button>
+      <button class="tab" data-tab="history"> History</button>
     </div>
-    <button id="shortenBtn">
-      <span class="icon"></span>Shorten URL
-    </button>
-    <div id="shortUrl"></div>
+
+    <div id="shortenTab" class="tab-content active">
+      <div class="input-group">
+        <input type="text" id="urlInput" placeholder="Paste your long URL here..." />
+      </div>
+      <button id="shortenBtn">
+        <span class="icon"></span>Shorten URL
+      </button>
+      <div id="shortUrl"></div>
+      <div class="share-section" id="shareSection">
+        <div class="share-title">Share your link:</div>
+        <div class="share-icons" id="shareIcons">
+          <!-- Share icons will be dynamically added here -->
+        </div>
+      </div>
+    </div>
+
+    <div id="historyTab" class="tab-content">
+      <div class="history-container" id="historyContainer">
+        <div class="history-empty">No history yet. Start shortening URLs!</div>
+      </div>
+      <button class="clear-history-btn" id="clearHistoryBtn" style="display: none;">
+         Clear All History
+      </button>
+    </div>
   </div>
 </body>
 <script src="popup.js"></script>

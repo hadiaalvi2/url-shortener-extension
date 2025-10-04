@@ -13,7 +13,8 @@
   },
   "permissions": [
     "clipboardWrite",
-    "clipboardRead"
+    "clipboardRead",
+    "storage"
   ],
   "host_permissions": [
     "https://cleanuri.com/*",
