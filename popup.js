@@ -12,7 +12,6 @@ tabs.forEach(tab => {
     tab.classList.add('active');
     document.getElementById(`${tabName}Tab`).classList.add('active');
     
-    // Load history when history tab is opened
     if (tabName === 'history') {
       loadHistory();
     }
@@ -53,7 +52,7 @@ window.showQRModal = function(url) {
   modal.innerHTML = `
     <div class="qr-modal-content">
       <div class="qr-modal-header">
-        <h3>QR</h3>
+        <h3>QR Code</h3>
         <button class="qr-close-btn">&times;</button>
       </div>
       <div class="qr-modal-body">
@@ -66,19 +65,16 @@ window.showQRModal = function(url) {
   
   document.body.appendChild(modal);
   
-  // Close button
   modal.querySelector('.qr-close-btn').addEventListener('click', () => {
     modal.remove();
   });
   
-  // Click outside to close
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       modal.remove();
     }
   });
 
-  // Download QR code
   modal.querySelector('.qr-download-btn').addEventListener('click', async () => {
     const qrUrl = generateQRCode(url);
     try {
@@ -97,6 +93,43 @@ window.showQRModal = function(url) {
       alert('Failed to download QR code. Please try right-clicking on the image and saving it.');
     }
   });
+}
+
+// Fetch metadata from URL
+async function fetchMetadata(url) {
+  try {
+    const response = await fetch(url);
+    const html = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    
+    const title = doc.querySelector('title')?.textContent || 
+                  doc.querySelector('meta[property="og:title"]')?.content || 
+                  doc.querySelector('meta[name="twitter:title"]')?.content || 
+                  'No title';
+    
+    const description = doc.querySelector('meta[name="description"]')?.content || 
+                        doc.querySelector('meta[property="og:description"]')?.content || 
+                        doc.querySelector('meta[name="twitter:description"]')?.content || 
+                        'No description available';
+    
+    let favicon = doc.querySelector('link[rel="icon"]')?.href || 
+                  doc.querySelector('link[rel="shortcut icon"]')?.href ||
+                  doc.querySelector('link[rel="apple-touch-icon"]')?.href;
+    
+    if (!favicon) {
+      const urlObj = new URL(url);
+      favicon = `${urlObj.origin}/favicon.ico`;
+    } else if (favicon.startsWith('/')) {
+      const urlObj = new URL(url);
+      favicon = `${urlObj.origin}${favicon}`;
+    }
+    
+    return { title, description, favicon };
+  } catch (err) {
+    console.error('Failed to fetch metadata:', err);
+    return null;
+  }
 }
 
 // URL Shortener functionality
@@ -120,6 +153,8 @@ document.getElementById("shortenBtn").addEventListener("click", async () => {
       output.textContent = "Invalid URL format";
       return;
     }
+    
+    const metadataPromise = fetchMetadata(validUrl.href);
 
     const response = await fetch("https://cleanuri.com/api/v1/shorten", {
       method: "POST",
@@ -134,11 +169,10 @@ document.getElementById("shortenBtn").addEventListener("click", async () => {
     if (data.result_url) {
       output.innerHTML = `Short URL: <a href="${data.result_url}" target="_blank">${data.result_url}</a>`;
 
-      // Show share icons with QR code and native share
       showShareIcons(data.result_url);
-
-      // Save to history
-      await saveToHistory(validUrl.href, data.result_url);
+      
+      const metadata = await metadataPromise;
+      await saveToHistory(validUrl.href, data.result_url, metadata);
 
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -164,20 +198,19 @@ document.getElementById("shortenBtn").addEventListener("click", async () => {
 });
 
 // History Management
-async function saveToHistory(originalUrl, shortUrl) {
+async function saveToHistory(originalUrl, shortUrl, metadata = null) {
   try {
     const result = await chrome.storage.local.get(['urlHistory']);
     let history = result.urlHistory || [];
     
-    // Add new entry at the beginning
     history.unshift({
       id: Date.now(),
       originalUrl: originalUrl,
       shortUrl: shortUrl,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      metadata: metadata
     });
     
-    // Keep only last 50 entries
     if (history.length > 50) {
       history = history.slice(0, 50);
     }
@@ -207,9 +240,16 @@ async function loadHistory() {
       const date = new Date(item.date);
       const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
       
+      const metadata = item.metadata;
+      const hasFavicon = metadata && metadata.favicon;
+      const hasDescription = metadata && metadata.description && metadata.description !== 'No description available';
+      
       return `
         <div class="history-item" data-id="${item.id}">
           <div class="history-item-date">${formattedDate}</div>
+          ${hasFavicon ? `<div class="history-item-favicon"><img src="${metadata.favicon}" alt="favicon" onerror="this.style.display='none'"></div>` : ''}
+          ${metadata && metadata.title && metadata.title !== 'No title' ? `<div class="history-item-title">${metadata.title}</div>` : ''}
+          ${hasDescription ? `<div class="history-item-description">${truncateText(metadata.description, 100)}</div>` : ''}
           <div class="history-item-original">Original: ${truncateUrl(item.originalUrl)}</div>
           <div class="history-item-short">Short: ${item.shortUrl}</div>
           <div class="history-item-actions">
@@ -225,7 +265,6 @@ async function loadHistory() {
       `;
     }).join('');
     
-    // Add event listeners for history actions
     container.querySelectorAll('.copy-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const url = e.target.dataset.url;
@@ -294,19 +333,21 @@ function truncateUrl(url, maxLength = 40) {
   return url.substring(0, maxLength) + '...';
 }
 
-// Clear history button
+function truncateText(text, maxLength = 100) {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+}
+
 document.getElementById('clearHistoryBtn').addEventListener('click', async () => {
   if (confirm('Are you sure you want to clear all history?')) {
     await clearAllHistory();
   }
 });
 
-// Load history on startup if history tab is active
 if (document.getElementById('historyTab').classList.contains('active')) {
   loadHistory();
 }
 
-// Share functionality
 function showShareIcons(url) {
   const shareSection = document.getElementById('shareSection');
   const shareIcons = document.getElementById('shareIcons');
@@ -346,7 +387,6 @@ function showShareIcons(url) {
   
   shareSection.classList.add('visible');
   
-  // Add event listeners
   const nativeShareBtn = shareIcons.querySelector('.native-share');
   if (nativeShareBtn) {
     nativeShareBtn.addEventListener('click', () => {
@@ -380,7 +420,7 @@ function getHistoryShareIcons(url) {
   const shareText = encodeURIComponent('Check out this link!');
   
   return `
-    <button class="history-share-icon native-share" title="Share" data-url="${url}" style="background: #000; color: white; border: none; cursor: pointer;">
+    <button class="history-share-icon native-share" title="Share" data-url="${url}" style="background: #000; color: white;">
       <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
     </button>
     <a href="https://wa.me/?text=${shareText}%20${encodedUrl}" target="_blank" class="history-share-icon whatsapp" title="WhatsApp" style="background: #25D366; color: white;">
@@ -407,4 +447,4 @@ document.addEventListener('click', function(e) {
       window.nativeShare(url);
     }
   }
-});   
+});
